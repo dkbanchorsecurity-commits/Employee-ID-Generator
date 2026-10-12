@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editable Employee ID - DKB Anchor Security</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
+    :root {
+        --primary-blue: #0A192F;
+        --primary-gold: #C59B48;
+        --card-bg: #FFFFFF;
+        --text-dark: #000000;
+        --text-light: #FFFFFF;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+    }
+
+    .controls {
+        margin-bottom: 30px;
+        background: white;
+        padding: 15px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .controls h2 { margin-top: 0; color: var(--primary-blue); }
+
+    .controls button {
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+        margin-top: 10px;
+    }
+
+    .controls button:hover { background-color: var(--primary-gold); }
+
+    .cards-wrapper {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .id-card {
+        width: 340px; height: 538px;
+        background: var(--card-bg);
+        border-radius: 15px; position: relative; overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
+    }
+
+    .front-top-bg-gold {
+        position: absolute; top: -60px; left: -30px; width: 420px; height: 280px;
+        background: var(--primary-gold); border-radius: 0 0 40% 60% / 0 0 50% 50%; z-index: 1;
+    }
+    .front-top-bg-blue {
+        position: absolute; top: -65px; left: -30px; width: 420px; height: 275px;
+        background: var(--primary-blue); border-radius: 0 0 40% 60% / 0 0 50% 50%; z-index: 2;
+    }
+    .front-bottom-bg-gold {
+        position: absolute; bottom: -40px; left: -20px; width: 400px; height: 120px;
+        background: var(--primary-gold); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 1;
+    }
+    .front-bottom-bg-blue {
+        position: absolute; bottom: -45px; left: -20px; width: 400px; height: 120px;
+        background: var(--primary-blue); border-radius: 50% 50% 0 0 / 100% 100% 0 0; z-index: 2;
+    }
+
+    .header-content {
+        position: relative; z-index: 3; display: flex; align-items: center; width: 100%;
+        padding: 30px 20px 10px 20px; box-sizing: border-box;
+    }
+
+    .logo-placeholder {
+        width: 70px; height: 80px; margin-right: 15px; display: flex; justify-content: center; align-items: center;
+        cursor: pointer; transition: 0.2s;
+    }
+    .logo-placeholder:hover { opacity: 0.8; }
+    .logo-placeholder img { width: 100%; height: 100%; object-fit: contain; }
+
+    .company-titles { display: flex; flex-direction: column; }
+    .company-name { color: var(--text-light); font-size: 22px; font-weight: 900; line-height: 1.1; letter-spacing: 0.5px; }
+    .company-sub { color: var(--primary-gold); font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+    .tagline { color: var(--text-light); font-size: 10px; font-weight: 400; line-height: 1.3; }
+
+    .photo-wrapper {
+        position: relative; z-index: 3; margin-top: 15px; width: 130px; height: 150px;
+        border: 3px solid var(--primary-gold); border-radius: 8px; overflow: hidden; background: #4a90e2; 
+        cursor: pointer; transition: 0.2s;
+    }
+    .photo-wrapper:hover { opacity: 0.8; }
+    .photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+    .employee-name {
+        position: relative; z-index: 3; font-size: 24px; font-weight: 900; color: var(--primary-blue);
+        margin: 15px 0 2px 0; letter-spacing: 1px; outline: none;
+    }
+    .employee-name:focus, .employee-role:focus, .details-table td:focus, .contact-item div:focus { 
+        border-bottom: 1px dashed var(--primary-gold); background-color: rgba(197, 155, 72, 0.1);
+    }
+    .employee-role {
+        position: relative; z-index: 3; font-size: 16px; font-weight: 700; color: var(--primary-gold);
+        margin: 0 0 15px 0; outline: none;
+    }
+
+    .details-table {
+        position: relative; z-index: 3; width: 80%; font-size: 11px; font-weight: 700;
+        color: var(--text-dark); border-top: 1px solid rgba(197, 155, 72, 0.5); padding-top: 15px;
+    }
+    .details-table table { width: 100%; border-collapse: collapse; }
+    .details-table td { padding: 4px 0; outline: none; }
+    .details-table td:nth-child(1) { width: 45%; text-align: left; }
+    .details-table td:nth-child(2) { width: 55%; text-align: left; font-weight: 500; }
+
+    .signature-area {
+        position: absolute; bottom: 15px; z-index: 3; width: 100%; text-align: center;
+        color: var(--text-light);
+    }
+    
+    .signature-text-placeholder {
+        font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
+        font-size: 30px;
+        margin-bottom: 2px;
+        height: 50px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+    
+    .signature-line { width: 150px; height: 1px; background: var(--text-light); margin: 0 auto 5px auto; }
+    .signature-text { font-size: 10px; letter-spacing: 0.5px; }
+
+    /* BACK CARD STYLES */
+    .back-top-bg-gold {
+        position: absolute; top: -120px; left: -50px; width: 500px; height: 300px;
+        background: var(--primary-gold); border-radius: 0 0 50% 50%; z-index: 1;
+    }
+    .back-top-bg-blue {
+        position: absolute; top: -125px; left: -50px; width: 500px; height: 295px;
+        background: var(--primary-blue); border-radius: 0 0 50% 50%; z-index: 2;
+    }
+    .back-header-content {
+        position: relative; z-index: 3; display: flex; align-items: center; justify-content: center;
+        width: 100%; padding: 30px 20px 20px 20px; box-sizing: border-box;
+    }
+    .back-header-content .logo-placeholder { width: 50px; height: 50px; margin-right: 15px; }
+    .divider-line { width: 1px; height: 40px; background: var(--primary-gold); margin-right: 15px; }
+    
+    .back-title {
+        position: relative; z-index: 3; font-size: 18px; font-weight: 900; color: var(--primary-blue);
+        margin: 30px 0 15px 0; display: flex; align-items: center; letter-spacing: 1px;
+    }
+    .back-title::before, .back-title::after {
+        content: ''; display: inline-block; width: 40px; height: 1px; background: var(--primary-gold); margin: 0 10px;
+    }
+    .back-text {
+        position: relative; z-index: 3; font-size: 12px; line-height: 1.5; text-align: center;
+        color: var(--text-dark); padding: 0 30px; margin-bottom: 15px;
+    }
+    .back-text-divider {
+        width: 80%; height: 1px; background: rgba(197, 155, 72, 0.5); margin: 10px auto; position: relative; z-index: 3;
+    }
+    .emergency-section {
+        position: relative; z-index: 3; width: 100%; padding: 0 30px; box-sizing: border-box;
+    }
+    .emergency-title { font-size: 11px; font-weight: 900; color: var(--text-dark); margin-bottom: 10px; }
+    .contact-item { display: flex; align-items: flex-start; margin-bottom: 8px; font-size: 11px; }
+    .contact-icon {
+        width: 16px; height: 16px; background: var(--primary-gold); border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; margin-right: 10px; color: white; font-size: 10px; flex-shrink: 0;
+    }
+    .watermark {
+        position: absolute; bottom: 50px; right: -30px; width: 200px; height: 200px; opacity: 0.05; z-index: 1;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 L50 90 M30 80 Q50 100 70 80 M20 40 L80 40" stroke="%230A192F" stroke-width="10" fill="none"/><circle cx="50" cy="15" r="8" stroke="%230A192F" stroke-width="8" fill="none"/></svg>') no-repeat center;
+        background-size: contain;
+    }
+    .back-footer {
+        position: absolute; bottom: 0; left: 0; width: 100%; background: var(--primary-blue); height: 50px;
+        display: flex; justify-content: space-around; align-items: center; z-index: 3; border-radius: 0 0 15px 15px;
+    }
+    .footer-item { display: flex; flex-direction: column; align-items: center; color: var(--text-light); font-size: 9px; }
+    .footer-icon { width: 18px; height: 18px; margin-bottom: 3px; fill: var(--primary-gold); }
+</style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>DKB Anchor Security ID Generator</h2>
+        <p>Click on text to edit. Click image areas to upload photos or logos.</p>
+        <button onclick="downloadCards()">Download ID Cards as PNG</button>
+    </div>
+
+    <!-- Hidden file inputs for photos and logos -->
+    <input type="file" id="photo-upload" style="display: none;" accept="image/*" onchange="loadPhoto(event)">
+    <input type="file" id="logo-upload" style="display: none;" accept="image/*" onchange="loadLogo(event)">
+
+    <div class="cards-wrapper" id="id-cards-container">
+        
+        <!-- FRONT OF ID CARD -->
+        <div class="id-card" id="card-front">
+            <div class="front-top-bg-gold"></div>
+            <div class="front-top-bg-blue"></div>
+            
+            <div class="header-content">
+                <div class="logo-placeholder" onclick="document.getElementById('logo-upload').click()" title="Click to upload Logo">
+                    <img id="logo-front" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z' fill='none' stroke='%23C59B48' stroke-width='4'/><text x='50' y='55' font-size='18' text-anchor='middle' fill='%23C59B48'>LOGO</text></svg>" alt="Logo">
+                </div>
+                <div class="company-titles">
+                    <div class="company-name">DKB ANCHOR</div>
+                    <div class="company-sub">SECURITY SERVICES LTD</div>
+                    <div class="tagline">YOUR SAFETY,<br>OUR PRIORITY</div>
+                </div>
+            </div>
+
+            <div class="photo-wrapper" onclick="document.getElementById('photo-upload').click()" title="Click to upload employee photo">
+                <img id="employee-photo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 130 150'><rect width='130' height='150' fill='%234a90e2'/><text x='65' y='75' font-size='14' text-anchor='middle' fill='white'>Upload Photo</text></svg>" alt="Employee Photo">
+            </div>
+
+            <div class="employee-name" contenteditable="true">KOFI SAKYI</div>
+            <div class="employee-role" contenteditable="true">GUARD</div>
+
+            <div class="details-table">
+                <table>
+                    <tr><td>EMPLOYEE ID</td><td contenteditable="true">: DKB-GH-440114</td></tr>
+                    <tr><td>DEPARTMENT</td><td contenteditable="true">: Operations</td></tr>
+                    <tr><td>DATE OF ISSUE</td><td contenteditable="true">: 09/07/2026</td></tr>
+                </table>
+            </div>
+
+            <div class="front-bottom-bg-gold"></div>
+            <div class="front-bottom-bg-blue"></div>
+
+            <div class="signature-area">
+                <div class="signature-text-placeholder">Signed</div>
+                <div class="signature-line"></div>
+                <div class="signature-text">AUTHORIZED SIGNATURE</div>
+            </div>
+        </div>
+
+        <!-- BACK OF ID CARD -->
+        <div class="id-card" id="card-back">
+            <div class="back-top-bg-gold"></div>
+            <div class="back-top-bg-blue"></div>
+            
+            <div class="back-header-content">
+                <div class="logo-placeholder" onclick="document.getElementById('logo-upload').click()">
+                    <img id="logo-back" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z' fill='none' stroke='%23C59B48' stroke-width='4'/></svg>" alt="Logo">
+                </div>
+                <div class="divider-line"></div>
+                <div class="company-titles">
+                    <div class="company-name" style="font-size: 18px;">DKB ANCHOR</div>
+                    <div class="company-sub" style="font-size: 10px;">SECURITY SERVICES LTD</div>
+                </div>
+            </div>
+
+            <div class="back-title">IDENTIFICATION</div>
+
+            <div class="back-text">
+                This is to certify that the person whose<br>
+                photograph and details appear on the<br>
+                front of this card is an employee of<br>
+                DKB Anchor Security Services Ltd.
+            </div>
+
+            <div class="back-text-divider"></div>
+
+            <div class="back-text" style="font-size: 11px;">
+                This card is the property of<br>
+                DKB Anchor Security Services Ltd.<br>
+                If found, please return to the<br>
+                nearest office.
+            </div>
+
+            <div class="emergency-section">
+                <div class="emergency-title">IN CASE OF EMERGENCY, PLEASE CONTACT:</div>
+                <div class="contact-item"><div class="contact-icon">&#9990;</div><div contenteditable="true">0247071531</div></div>
+                <div class="contact-item"><div class="contact-icon">&#9993;</div><div contenteditable="true">info@dkbanchorsecurity.com</div></div>
+                <div class="contact-item"><div class="contact-icon">&#10092;</div><div contenteditable="true">NEAR MILE 7 POLICE STATION,<br>ACHIMOTA ACCRA GHANA</div></div>
+            </div>
+
+            <div class="watermark"></div>
+
+            <div class="back-footer">
+                <div class="footer-item">
+                    <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>INTEGRITY
+                </div>
+                <div class="footer-item">
+                    <svg class="footer-icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.03-4.57l-1.42-1.42C14.47 13.1 15 11.61 15 10c0-2.76-2.24-5-5-5S5 7.24 5 10s2.24 5 5 5c1.61 0 3.1-.53 4.01-1.41l1.42 1.42c-1.14 1.13-2.69 1.83-4.43 1.83-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7c0 1.74-.7 3.29-1.83 4.43a6.96 6.96 0 011.86.16z"/></svg>PROFESSIONALISM
+                </div>
+                <div class="footer-item">
+                    <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>VIGILANCE
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadPhoto(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('employee-photo').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function loadLogo(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('logo-front').src = e.target.result;
+                document.getElementById('logo-back').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function downloadCards() {
+            html2canvas(document.getElementById('card-front'), {
+                scale: 2, 
+                backgroundColor: null,
+                useCORS: true 
+            }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'ID_Card_Front.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+            
+            setTimeout(() => {
+                html2canvas(document.getElementById('card-back'), {
+                    scale: 2, 
+                    backgroundColor: null,
+                    useCORS: true
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    link.download = 'ID_Card_Back.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
